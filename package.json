@@ -1,0 +1,11 @@
+{
+  "name": "heirloom-pitch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pitch site for Heirloom (Lab to Market application). Static: no build step.",
+  "scripts": {
+    "start": "npx --yes http-server . -p 8080 -c-1",
+    "check": "node --check js/main.js && node --check js/twin.js"
+  },
+  "license": "UNLICENSED"
+}

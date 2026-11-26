@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heirloom · Farm decisions</title>
+<meta name="description" content="Heirloom tells people who inherit farmland what their field can profitably grow, using simulation and a low-cost sensor-driven digital twin.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top"><span class="mark" aria-hidden="true"></span>Heirloom</a>
+  <nav class="links scroll">
+    <a href="#problem">Problem</a>
+    <a href="#how">How it works</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#market">Market</a>
+    <a href="#team">Team</a>
+  </nav>
+</header>
+
+<main id="top">
+
+<section class="hero band">
+  <div class="hero-text">
+    <h1>Inherited a field? Know what it's worth growing.</h1>
+    <p class="lede">Heirloom gives people who inherit farmland a clear, field-specific answer: which crop pays, what it costs, how much work it takes, or whether leasing is smarter. Behind each answer is a simulation calibrated by a low-cost digital twin of the field.</p>
+    <div class="cta-row">
+      <a class="btn" href="#how">See how it works</a>
+      <a class="btn ghost" href="#contact">Inherited land? Talk to us</a>
+    </div>
+  </div>
+</section>
+
+<section class="twin-band" aria-label="Digital twin illustration">
+  <div id="twin" class="fig twin">
+    <div class="hud" aria-live="off">
+      <div class="hud-title">Field B · live twin <span class="sim">simulated</span></div>
+      <div class="hud-row"><span>Soil moisture</span><b id="h-moist">–</b></div>
+      <div class="hud-row"><span>Leaf wetness (24h)</span><b id="h-leaf">–</b></div>
+      <div class="hud-row"><span>Downy mildew risk</span><b id="h-risk">–</b></div>
+      <div class="hud-row"><span>Next irrigation</span><b id="h-irr">–</b></div>
+    </div>
+    <p class="nogl-msg">Physical field below, digital twin above: each sensor keeps the virtual field in sync with the real one.</p>
+  </div>
+  <p class="caption band-inner">Bottom: the real field with soil nodes, a shared weather node and the gateway. Top: its digital twin, a soil-moisture map that the sensor data keeps updated. Drag to rotate.</p>
+</section>
+
+<section id="problem" class="band">
+  <h2>Greek farmland is changing hands to people who have never farmed</h2>
+  <p class="section-lede">Land in Greece passes mostly through inheritance. Heirs grow up in cities and face costly questions with no field-specific answers.</p>
+  <div class="stats">
+    <div class="stat"><b>7.2%</b><span>of Greek farm managers are under 40, one of the lowest shares in the EU</span><sup>1</sup></div>
+    <div class="stat"><b>~40%</b><span>of Greek farm managers are over 65</span><sup>1</sup></div>
+    <div class="stat"><b>0.7%</b><span>of Greek farm managers have full agricultural training</span><sup>3</sup></div>
+    <div class="stat"><b>~85%</b><span>of Greece's freshwater goes to irrigation, amid repeated drought years</span><sup>4</sup></div>
+  </div>
+  <div class="questions">
+    <p>What a new owner actually asks:</p>
+    <ul>
+      <li>Is this field worth farming at all, or should I lease it?</li>
+      <li>Which crop pays on <em>this</em> soil and climate?</li>
+      <li>What did it grow last year, and how does that change my choice?</li>
+      <li>How many hours, how much water and fertilizer, how much money?</li>
+    </ul>
+  </div>
+</section>
+
+<section id="how" class="band tint">
+  <h2>From a pin on a map to a ranked, costed plan</h2>
+  <ol class="steps">
+    <li>
+      <h3>Locate and reconstruct</h3>
+      <p>The owner drops a pin on the plot. Historical Sentinel-2 satellite imagery (archive from 2015) and owner input rebuild what the field grew in past seasons.</p>
+    </li>
+    <li>
+      <h3>Simulate every option</h3>
+      <p>Validated open crop models (DSSAT, FAO AquaCrop) simulate yield, water and nitrogen for candidate crops and multi-year rotations. An economic layer adds prices, CAP subsidies, input and labour costs.</p>
+    </li>
+    <li>
+      <h3>Keep the twin in sync</h3>
+      <p>Low-cost LoRa sensors calibrate the model to the real soil before planting, then drive irrigation timing and disease-risk alerts once the crop is in.</p>
+    </li>
+  </ol>
+
+  <div class="mock" id="mock">
+    <div class="mock-head">
+      <div>
+        <div class="mock-title">Plot 1042 · Thessaly · 12 stremmata</div>
+        <div class="mock-sub">Ranked options for the 2027 season</div>
+      </div>
+      <div class="seg" role="group" aria-label="Last season's crop">
+        <span class="seg-label">Last season</span>
+        <button type="button" data-prev="wheat" aria-pressed="true">Wheat</button>
+        <button type="button" data-prev="chickpea" aria-pressed="false">Chickpea</button>
+      </div>
+    </div>
+    <div class="scroll">
+      <table class="rank">
+        <thead><tr><th>Option</th><th class="num">Net €/str.</th><th class="bar-col"></th><th class="num">Work h/str.</th><th class="num">Water m³/str.</th><th>Risk</th></tr></thead>
+        <tbody id="rank-body"></tbody>
+      </table>
+    </div>
+    <p class="mock-note" id="rank-note"></p>
+    <p class="sample">Sample output with illustrative numbers: shows how the field's history changes the recommendation.</p>
+  </div>
+</section>
+
+<section id="architecture" class="band">
+  <h2>A field network that costs hundreds, not thousands</h2>
+  <p class="section-lede">Every node runs on its own STM32WL (RAK3172) radio module and sleeps most of the time, so batteries last for years. One gateway covers fields kilometres apart.</p>
+  <div id="arch" class="fig arch" role="img" aria-label="Six soil nodes in three fields and one weather node send data over LoRa to a gateway, which forwards it over 4G to a server running ChirpStack, InfluxDB, Grafana and crop simulations, feeding the app."></div>
+  <div class="legend">
+    <span><i class="lg radio"></i>LoRa radio, 2–10 km in open fields</span>
+    <span><i class="lg net"></i>4G / internet</span>
+    <span><i class="lg pkt"></i>Data packet</span>
+  </div>
+
+  <div class="parts">
+    <article>
+      <h3>Soil node ×6</h3>
+      <p>RAK3172 (STM32WL + LoRa), capacitive moisture at two depths, DS18B20 soil temperature, 18650 cell with 1 W solar, ASA-printed enclosure. Two per field.</p>
+      <b class="price">€20–35 each</b>
+    </article>
+    <article>
+      <h3>Weather node ×1</h3>
+      <p>RAK3172 with air temperature and humidity (SHT31), leaf wetness, tipping-bucket rain gauge. Shared by neighbouring fields, because weather barely changes plot to plot.</p>
+      <b class="price">€80–150</b>
+    </article>
+    <article>
+      <h3>Gateway</h3>
+      <p>Raspberry Pi with an SX1302 LoRaWAN concentrator. Adds a 4G modem where the field has no internet. Receives every packet and forwards it.</p>
+      <b class="price">~€150</b>
+    </article>
+    <article>
+      <h3>Server</h3>
+      <p>ChirpStack network server, InfluxDB time series, Grafana dashboards and the DSSAT / AquaCrop simulations, in Docker on our existing Proxmox workstation.</p>
+      <b class="price">€0 for the pilot</b>
+    </article>
+  </div>
+
+  <div class="total">
+    <div><span>Three-field pilot</span><b>≈ €450–500</b></div>
+    <p>6 soil nodes + 1 weather node + 1 gateway. Our research angle: calibrating low-cost capacitive sensors against a reference probe, per soil type, so cheap hardware gives trustworthy data.</p>
+  </div>
+</section>
+
+<section id="market" class="band tint">
+  <h2>We start one step earlier than precision agriculture</h2>
+  <p class="section-lede">Existing tools help experienced farmers optimise a crop they already grow. We answer the question before that, for people with no farming background.</p>
+  <div class="market">
+    <div id="pos" class="fig pos" role="img" aria-label="Positioning chart: Heirloom combines field-specific data with suitability for non-farmers, unlike precision-agriculture platforms, farm-management apps and private agronomists."></div>
+    <div class="who">
+      <h3>Who uses it</h3>
+      <dl>
+        <dt>Primary</dt><dd>Landowners without farming experience, mainly urban heirs deciding what to do with a field.</dd>
+        <dt>Secondary</dt><dd>Small farmers and lessees who work this land and want lower water, energy and input costs.</dd>
+        <dt>Channels</dt><dd>Cooperatives sharing weather nodes and gateways, agronomists, local farmers looking for land to lease.</dd>
+      </dl>
+      <h3>How we earn</h3>
+      <ul class="rev">
+        <li><b>Field report</b> One-off simulation and ranked plan for a plot.</li>
+        <li><b>Twin subscription</b> Sensor kit plus monitoring, irrigation and disease alerts.</li>
+        <li><b>Match-making</b> Fee for connecting owners with lessees, contractors and agronomists.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <h2>Next twelve months</h2>
+  <ol class="road">
+    <li><span>Now</span><p>Problem research, concept, architecture. Idea stage, two weeks in.</p></li>
+    <li><span>Next</span><p>20+ interviews with heirs, farmers and cooperatives to validate the problem and willingness to pay.</p></li>
+    <li><span>Then</span><p>Simulation MVP for a first set of crops in one region, checked by an agronomist.</p></li>
+    <li><span>Pilot</span><p>Three-field sensor pilot, sensor calibration, first twin running a full season.</p></li>
+    <li><span>Launch</span><p>First paid field reports and pilot subscriptions with a cooperative.</p></li>
+  </ol>
+</section>
+
+<section id="team" class="band tint">
+  <h2>Team</h2>
+  <div class="team">
+    <article>
+      <h3>Marina Fragkouli</h3>
+      <p class="role">Electrical &amp; Computer Engineering, NTUA</p>
+      <p>Robotics, embedded systems, web and IT, marketing and strategy. Leads system architecture, the data and simulation pipeline, the platform, and customer discovery.</p>
+    </article>
+    <article>
+      <h3>Vasiliki Tsiplakidi</h3>
+      <p class="role">Embedded systems &amp; finance</p>
+      <p>Leads the LoRa sensor nodes (hardware, firmware, low-power design, calibration) and the cost-benefit and financial models behind every recommendation.</p>
+    </article>
+    <article class="open">
+      <h3>Agronomy advisor</h3>
+      <p class="role">We are looking</p>
+      <p>An agricultural scientist to validate crop models and recommendations. If that's you, get in touch.</p>
+    </article>
+  </div>
+</section>
+
+<section id="contact" class="band contact">
+  <h2>Inherited land, or farm it?</h2>
+  <p>We're interviewing landowners, farmers and cooperatives. Twenty minutes of your story shapes what we build.</p>
+  <div class="cta-row" id="cta"></div>
+</section>
+
+</main>
+
+<footer class="band foot">
+  <h2 class="small">Sources</h2>
+  <ol class="sources">
+    <li>Eurostat, Farm structure survey 2020, via <a href="https://en.ilsole24ore.com/art/generational-turnover-land-knot-holds-back-young-italian-farmers-AIXRfTLB">Il Sole 24 Ore</a> and <a href="https://ec.europa.eu/eurostat/statistics-explained/SEPDF/cache/73320.pdf">Eurostat</a>.</li>
+    <li><a href="https://wikifarmer.com/library/en/article/eu-young-farmers-barriers-land-credit-working-conditions">Wikifarmer, EU young farmers: barriers</a>, on inheritance as the main entry path in Greece.</li>
+    <li><a href="https://ec.europa.eu/eurostat/statistics-explained/index.php/Farmers_and_the_agricultural_labour_force_-_statistics">Eurostat, Farmers and the agricultural labour force</a>.</li>
+    <li><a href="https://www.tovima.com/climate/water-scarcity-the-solution-lies-in-the-field/">To Vima, Water scarcity: the solution lies in the field</a>; European Commission, Greece country report on river basin plans (2025).</li>
+  </ol>
+  <p class="fine">Heirloom is a working name · Lab to Market application · Sample figures on this page are illustrative.</p>
+</footer>
+
+<script src="js/main.js"></script>
+<script type="module" src="js/twin.js"></script>
+</body>
+</html>
